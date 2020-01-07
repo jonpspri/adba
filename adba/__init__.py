@@ -18,10 +18,10 @@ import threading
 from time import time, sleep, strftime, localtime
 from types import *
 
-from aniDBlink import AniDBLink
-from aniDBcommands import *
-from aniDBerrors import *
-from aniDBAbstracter import Anime, Episode
+from .aniDBlink import AniDBLink
+from .aniDBcommands import *
+from .aniDBerrors import *
+from .aniDBAbstracter import Anime, Episode
 
 version = 100
 
@@ -45,7 +45,7 @@ class Connection(threading.Thread):
         self.clientname = clientname
         self.clientver = version
 
-        # from original lib 
+        # from original lib
         self.mode = 1    #mode: 0=queue,1=unlock,2=callback
 
         # to lock other threads out
@@ -121,7 +121,7 @@ class Connection(threading.Thread):
                 command.resp
             except:
                 self.lock.release()
-                raise AniDBCommandTimeoutError, "Command has timed out"
+                raise AniDBCommandTimeoutError("Command has timed out")
 
             self.handle_response(command.resp)
             self.lock.release()
@@ -151,7 +151,7 @@ class Connection(threading.Thread):
         self.lastKeepAliveCheck = time()
         self.log("auto check !")
         # check every 30 minutes if the session is still valid
-        # if not reauthenticate 
+        # if not reauthenticate
         if self.lastAuth and time() - self.lastAuth > 1800:
             self.log("auto uptime !")
             self.uptime() # this will update the self.link.session and will refresh the session if it is still alive
@@ -177,13 +177,13 @@ class Connection(threading.Thread):
     def auth(self, username, password, nat=None, mtu=None, callback=None):
         """
         Login to AniDB UDP API
-        
+
         parameters:
         username - your anidb username
         password - your anidb password
         nat     - if this is 1, response will have "address" in attributes with your "ip:port" (default:0)
         mtu     - maximum transmission unit (max packet size) (default: 1400)
-        
+
         """
         self.log("ok1")
         if self.keepAlive:
@@ -206,7 +206,7 @@ class Connection(threading.Thread):
     def logout(self, cutConnection=False, callback=None):
         """
         Log out from AniDB UDP API
-        
+
         """
         result = self.handle(LogoutCommand(), callback)
         if(cutConnection):
@@ -224,7 +224,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         notify msg [buddy]
-        
+
         """
         return self.handle(PushCommand(notify, msg, buddy), callback)
 
@@ -237,23 +237,23 @@ class Connection(threading.Thread):
 
         structure of parameters:
         nid
-        
+
         """
         return self.handle(PushAckCommand(nid), callback)
 
     def notifyadd(self, aid=None, gid=None, type=None, priority=None, callback=None):
         """
         Add a notification
-        
+
         parameters:
         aid    - Anime id
         gid - Group id
         type - Type of notification: type=>  0=all, 1=new, 2=group, 3=complete
         priority - low = 0, medium = 1, high = 2 (unconfirmed)
-        
+
         structure of parameters:
         [aid={int}|gid={int}]&type={int}&priority={int}
-        
+
         """
 
         return self.handle(NotifyAddCommand(aid, gid, type, priority), callback)
@@ -268,14 +268,14 @@ class Connection(threading.Thread):
 
         structure of parameters:
         [buddy]
-        
+
         """
         return self.handle(NotifyCommand(buddy), callback)
 
     def notifylist(self, callback=None):
         """
         List all pending notifications/messages
-        
+
         """
         return self.handle(NotifyListCommand(), callback)
 
@@ -289,7 +289,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         type id
-        
+
         """
         return self.handle(NotifyGetCommand(type, id), callback)
 
@@ -303,7 +303,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         type id
-        
+
         """
         return self.handle(NotifyAckCommand(type, id), callback)
 
@@ -317,7 +317,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         (uid|uname)
-        
+
         """
         return self.handle(BuddyAddCommand(uid, uname), callback)
 
@@ -330,7 +330,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         uid
-        
+
         """
         return self.handle(BuddyDelCommand(uid), callback)
 
@@ -343,7 +343,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         uid
-        
+
         """
         return self.handle(BuddyAcceptCommand(uid), callback)
 
@@ -356,7 +356,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         uid
-        
+
         """
         return self.handle(BuddyDenyCommand(uid), callback)
 
@@ -369,7 +369,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         startat
-        
+
         """
         return self.handle(BuddyListCommand(startat), callback)
 
@@ -382,7 +382,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         startat
-        
+
         """
         return self.handle(BuddyStateCommand(startat), callback)
 
@@ -394,12 +394,12 @@ class Connection(threading.Thread):
         aid    - anime id
         aname    - name of the anime
         amask    - a bitfield describing what information you want about the anime
-        
+
         structure of parameters:
         (aid|aname) [amask]
-        
+
         structure of amask:
-        
+
         """
         return self.handle(AnimeCommand(aid, aname, amask), callback)
 
@@ -416,7 +416,7 @@ class Connection(threading.Thread):
         structure of parameters:
         eid
         (aid|aname) epno
-        
+
         """
         return self.handle(EpisodeCommand(eid, aid, aname, epno), callback)
 
@@ -475,7 +475,7 @@ class Connection(threading.Thread):
         29    -        -
         30    filename    anidb file name
         31    -        -
-        
+
         structure of amask:
         bit    key        description
         0    gname        group name
@@ -510,7 +510,7 @@ class Connection(threading.Thread):
         29    producerids    producer id list
         30    -        -
         31    -        -
-        
+
         """
         return self.handle(FileCommand(fid, size, ed2k, aid, aname, gid, gname, epno, fmask, amask), callback)
 
@@ -524,7 +524,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         (gid|gname)
-        
+
         """
         return self.handle(GroupCommand(gid, gname), callback)
 
@@ -554,7 +554,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         (pid|pname)
-        
+
         """
 
         return self.handle(ProducerCommand(pid, pname), callback)
@@ -579,7 +579,7 @@ class Connection(threading.Thread):
         fid
         size ed2k
         (aid|aname) (gid|gname) epno
-        
+
         """
         return self.handle(MyListCommand(lid, fid, size, ed2k, aid, aname, gid, gname, epno), callback)
 
@@ -617,13 +617,13 @@ class Connection(threading.Thread):
         1    on hdd    - the file is stored on hdd
         2    on cd    - the file is stored on cd
         3    deleted    - the file has been deleted or is not available for other reasons (i.e. reencoded)
-        
+
         structure of epno:
         value    meaning
         x    target episode x
         0    target all episodes
         -x    target all episodes upto x
-        
+
         """
         return self.handle(MyListAddCommand(lid, fid, size, ed2k, aid, aname, gid, gname, epno, edit, state, viewed, source, storage, other), callback)
 
@@ -653,7 +653,7 @@ class Connection(threading.Thread):
     def myliststats(self, callback=None):
         """
         Get summary information of your mylist
-        
+
         """
         return self.handle(MyListStatsCommand(), callback)
 
@@ -682,14 +682,14 @@ class Connection(threading.Thread):
         -x     revoke vote
         0     get old vote
         100-1000 give vote
-        
+
         """
         return self.handle(VoteCommand(type, id, name, value, epno), callback)
 
     def randomanime(self, type, callback=None):
         """
         Get information of random anime
-        
+
         parameters:
         type    - where to take the random anime
 
@@ -702,14 +702,14 @@ class Connection(threading.Thread):
         1    watched
         2    unwatched
         3    mylist
-        
+
         """
         return self.handle(RandomAnimeCommand(type), callback)
 
     def ping(self, callback=None):
         """
         Test connectivity to AniDB UDP API
-        
+
         """
         return self.handle(PingCommand(), callback)
 
@@ -724,7 +724,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         user [type]
-        
+
         """
         return self.handle(EncryptCommand(user, apipassword, type), callback)
 
@@ -745,9 +745,9 @@ class Connection(threading.Thread):
         even if you can't display utf-8 locally, don't change the server-client -connections encoding
         rather, make python convert the encoding when you DISPLAY the text
         it's better that way, let it go as utf8 to databases etc. because then you've the real data stored
-        
+
         """
-        raise AniDBStupidUserError, "pylibanidb sets the encoding to utf8 as default and it's stupid to use any other encoding. you WILL lose some data if you use other encodings, and now you've been warned. you will need to modify the code yourself if you want to do something as stupid as changing the encoding"
+        raise AniDBStupidUserError("pylibanidb sets the encoding to utf8 as default and it's stupid to use any other encoding. you WILL lose some data if you use other encodings, and now you've been warned. you will need to modify the code yourself if you want to do something as stupid as changing the encoding")
         return self.handle(EncodingCommand(name), callback)
 
     def sendmsg(self, to, title, body, callback=None):
@@ -761,7 +761,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         to title body
-        
+
         """
         return self.handle(SendMsgCommand(to, title, body), callback)
 
@@ -774,20 +774,20 @@ class Connection(threading.Thread):
 
         structure of parameters:
         user
-        
+
         """
         return self.handle(UserCommand(user), callback)
 
     def uptime(self, callback=None):
         """
         Retrieve server uptime
-        
+
         """
         return self.handle(UptimeCommand(), callback)
 
     def version(self, callback=None):
         """
         Retrieve server version
-        
+
         """
         return self.handle(VersionCommand(), callback)

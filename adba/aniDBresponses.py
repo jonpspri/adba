@@ -16,12 +16,12 @@
 # along with aDBa.  If not, see <http://www.gnu.org/licenses/>.
 
 from types import FunctionType
-from aniDBmaper import AniDBMaper
+from .aniDBmaper import AniDBMaper
 
 class ResponseResolver:
 	def __init__(self,data):
 		restag,rescode,resstr,datalines=self.parse(data)
-		
+
 		self.restag=restag
 		self.rescode=rescode
 		self.resstr=resstr
@@ -41,10 +41,10 @@ class ResponseResolver:
 		datalines=[]
 		for line in lines:
 			datalines.append(line.split('|'))
-		
-		
+
+
 		return restag,rescode,resstr,datalines
-	
+
 	def resolve(self,cmd):
 		return responses[self.rescode](cmd,self.restag,self.rescode,self.resstr,self.datalines)
 
@@ -60,13 +60,13 @@ class Response:
 
 	def __repr__(self):
 		tmp="%s(%s,%s,%s) %s\n"%(self.__class__.__name__,repr(self.restag),repr(self.rescode),repr(self.resstr),repr(self.attrs))
-		
+
 		m=0
 		for line in self.datalines:
 			for k,v in line.iteritems():
 				if len(k)>m:
 					m=len(k)
-		
+
 		for line in self.datalines:
 			tmp+="  Line:\n"
 			for k,v in line.iteritems():
@@ -77,7 +77,7 @@ class Response:
 		tmp=self.resstr.split(' ',len(self.codehead))
 		self.attrs=dict(zip(self.codehead,tmp[:-1]))
 		self.resstr=tmp[-1]
-		
+
 		self.datalines=[]
 		for rawline in self.rawlines:
 			normal=dict(zip(self.codetail,rawline))
@@ -90,7 +90,7 @@ class Response:
 					rep.append(tmp)
 			#normal['rep']=rep
 			self.datalines.append(normal)
-	
+
 	def handle(self):
 		if self.req:
 			self.req.handle(self)
@@ -297,7 +297,7 @@ class EncodingChangedResponse(Response):
 		self.coderep=()
 
 class FileResponse(Response):
-	
+
 	def __init__(self,cmd,restag,rescode,resstr,datalines):
 		"""
 		attributes:
@@ -345,22 +345,22 @@ class FileResponse(Response):
 		relatedaids	related aid list
 		producernames	producer name list
 		producerids	producer id list
-		
+
 		"""
 		Response.__init__(self,cmd,restag,rescode,resstr,datalines)
 		self.codestr='FILE'
 		self.codehead=()
 		self.coderep=()
-		
+
 		fmask=cmd.parameters['fmask']
 		amask=cmd.parameters['amask']
-		
+
 		codeListF = self.maper.getFileCodesF(fmask)
 		codeListA = self.maper.getFileCodesA(amask)
 		#print "File - codelistF: "+str(codeListF)
 		#print "File - codelistA: "+str(codeListA)
-		
-		
+
+
 		self.codetail=tuple(['fid']+codeListF+codeListA)
 
 class MylistResponse(Response):
@@ -391,7 +391,7 @@ class MylistStatsResponse(Response):
 	def __init__(self,cmd,restag,rescode,resstr,datalines):
 		"""
 		attributes:
-		
+
 		data:
 		animes		- animes
 		eps		- eps
@@ -409,7 +409,7 @@ class MylistStatsResponse(Response):
 		viewedeps	- number of viewed eps
 		votes		- votes
 		reviews		- reviews
-		
+
 		"""
 		Response.__init__(self,cmd,restag,rescode,resstr,datalines)
 		self.codestr='MYLIST_STATS'
@@ -419,12 +419,12 @@ class MylistStatsResponse(Response):
 
 class AnimeResponse(Response):
 	def __init__(self,cmd,restag,rescode,resstr,datalines):
-		
+
 		Response.__init__(self,cmd,restag,rescode,resstr,datalines)
 		self.codestr='ANIME'
 		self.codehead=()
 		self.coderep=()
-		
+
 		#TODO: impl random anime
 		amask = cmd.parameters['amask']
 		codeList = self.maper.getAnimeCodesA(amask)
@@ -525,7 +525,7 @@ class GroupResponse(Response):
 		self.codehead=()
 		self.codetail=('gid', 'rating', 'votes', 'animes', 'files', 'name', 'shortname', 'ircchannel', 'ircserver', 'url')
 		self.coderep=()
-		
+
 class GroupstatusResponse(Response):
 	def __init__(self,cmd,restag,rescode,resstr,datalines):
 		"""
@@ -715,7 +715,7 @@ class NotificationAddedResponse(Response):
 		"""
 		attributes:
 
-		data: 
+		data:
 		nid - notofication id
 
 		"""
@@ -730,7 +730,7 @@ class NotificationUpdatedResponse(Response):
 		"""
 		attributes:
 
-		data: 
+		data:
 		nid - notofication id
 
 		"""
@@ -878,7 +878,7 @@ class NotificationResponse(Response):
 		notifies - pending notifies
 		msgs	 - pending msgs
 		buddys	 - number of online buddys
-		
+
 		"""
 		Response.__init__(self,cmd,restag,rescode,resstr,datalines)
 		self.codestr='NOTIFICATION'
@@ -1853,4 +1853,3 @@ responses={
 	'666':ApiViolationResponse,
 	'998':VersionResponse
 }
-
