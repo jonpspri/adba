@@ -276,7 +276,7 @@ class Episode(aniDBabstractObject):
 
         try:
             self.aniDB.mylistadd(size=self.size, ed2k=self.ed2k, state=status)
-        except Exception, e :
+        except Exception as e:
             self.log(u"exception msg: " + str(e))
         else:
             # TODO: add the name or something
